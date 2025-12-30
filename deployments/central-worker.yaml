@@ -34,7 +34,7 @@ spec:
   timeout: 5m
   values:
     replicaCount: 1
-   image: docker.truebyteinnovation.com/cve-track/main/cvetrack-central:1191 # {"$imagepolicy": "flux-system:cvetrack-central-policy"}
+    image: docker.truebyteinnovation.com/cve-track/main/cvetrack-central:1191 # {"$imagepolicy": "flux-system:cvetrack-central-policy"}
     imagePullPolicy: Always
     imagePullSecrets:
       - name: docker-registry-secret
