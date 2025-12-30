@@ -1,0 +1,97 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: central-webapp
+  namespace: cve-track
+  labels:
+    app: central-webapp
+  annotations:
+    image.toolkit.fluxcd.io/image: docker.truebyteinnovation.com/cve-track/main/cvetrack-central
+    fluxcd.io/automated: "true"
+    fluxcd.io/branch: "dev"
+    fluxcd.io/commit: "auto"
+    fluxcd.io/url: "https://github.com/abhijoc85"
+    application.kubernetes.io/name: "cvetrack-central"
+    application.kubernetes.io/instance: "dev"
+    application.kubernetes.io/version: "1.0.0"
+    application.kubernetes.io/component: "api"
+    application.kubernetes.io/part-of: "cvetrack"
+    application.kubernetes.io/managed-by: "flux"
+    application.kubernetes.io/created-by: "Cursor AI"
+spec:
+  chart:
+    spec:
+      chart: service-deployment
+      sourceRef:
+        kind: HelmRepository
+        name: nexus
+        namespace: flux-system
+      version: 1.2.0
+  interval: 24h
+  releaseName: central-webapp
+  targetNamespace: cve-track
+  suspend: false
+  timeout: 5m
+  values:
+    replicaCount: 1
+    image: docker.truebyteinnovation.com/cve-track/main/central-webapp:1 # {"$imagepolicy": "flux-system:cvetrack-central-policy"}
+    imagePullPolicy: Always
+    imagePullSecrets:
+      - name: docker-registry-secret
+    livenessProbe: {}
+    readinessProbe: {}
+    service:
+      type: ClusterIP
+      port: 8000
+    resources:
+      enable: true
+      limits:
+        cpu: 600m
+        memory: 1Gi
+      requests:
+        cpu: 300m
+        memory: 1Gi
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 1
+      targetCPUUtilizationPercentage: 70
+      targetMemoryUtilizationPercentage: 70
+    ingress:
+      enabled: true
+      annotations:
+        kubernetes.io/ingress.class: nginx
+        nginx.ingress.kubernetes.io/secure-backends: "false"
+        nginx.ingress.kubernetes.io/ssl-redirect: "false"
+        nginx.ingress.kubernetes.io/enable-access-log: "false"
+      hosts:
+        - host: central.cvetrack.ai
+          paths:
+            - path: /
+              pathType: ImplementationSpecific
+    externalConfigMaps:
+      - name: cvetrack-common-config
+    externalSecrets:
+      - name: cvetrack-db-secret
+      - name: cvetrack-app-secret
+      - name: cvetrack-redis-secret
+      - name: cvetrack-email-secret
+      - name: cvetrack-jwt-secret
+    # affinity:
+    #   nodeAffinity:
+    #     requiredDuringSchedulingIgnoredDuringExecution:
+    #       nodeSelectorTerms:
+    #         - matchExpressions:
+    #             - key: env
+    #               operator: In
+    #               values:
+    #                 - prod
+    #             - key: app
+    #               operator: In
+    #               values:
+    #                 - cvetrack
+    topologySpreadConstraints:
+      enabled: true
+      maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: ScheduleAnyway
