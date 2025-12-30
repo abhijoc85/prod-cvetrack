@@ -8,11 +8,11 @@ metadata:
   annotations:
     image.toolkit.fluxcd.io/image: docker.truebyteinnovation.com/cve-track/main/cvetrack-central
     fluxcd.io/automated: "true"
-    fluxcd.io/branch: "dev"
+    fluxcd.io/branch: "master"
     fluxcd.io/commit: "auto"
     fluxcd.io/url: "https://github.com/abhijoc85"
     application.kubernetes.io/name: "cvetrack-central"
-    application.kubernetes.io/instance: "dev"
+    application.kubernetes.io/instance: "master"
     application.kubernetes.io/version: "1.0.0"
     application.kubernetes.io/component: "api"
     application.kubernetes.io/part-of: "cvetrack"
