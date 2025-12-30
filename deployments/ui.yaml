@@ -34,7 +34,7 @@ spec:
   timeout: 5m
   values:
     replicaCount: 1
-    image: docker.truebyteinnovation.com/cve-track/main/ui-dashboard:262 # {"$imagepolicy": "flux-system:cvetrack-ui-policy"}
+    image: docker.truebyteinnovation.com/cve-track/main/ui-dashboard:1194 # {"$imagepolicy": "flux-system:cvetrack-ui-policy"}
     imagePullPolicy: Always
     imagePullSecrets:
       - name: docker-registry-secret
