@@ -34,7 +34,7 @@ spec:
   timeout: 5m
   values:
     replicaCount: 1
-    image: docker.truebyteinnovation.com/cve-track/main/user-service:1 # {"$imagepolicy": "flux-system:user-service-policy"}
+    image: docker.truebyteinnovation.com/cve-track/main/user-service:1195 # {"$imagepolicy": "flux-system:user-service-policy"}
     imagePullPolicy: Always
     imagePullSecrets:
       - name: docker-registry-secret
