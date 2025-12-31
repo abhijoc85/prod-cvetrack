@@ -1,0 +1,116 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: user-service
+  namespace: cve-track
+  labels:
+    app: user-service
+  annotations:
+    image.toolkit.fluxcd.io/image: docker.truebyteinnovation.com/cve-track/main/user-service
+    fluxcd.io/automated: "true"
+    fluxcd.io/branch: "master"
+    fluxcd.io/commit: "auto"
+    fluxcd.io/url: "https://github.com/abhijoc85"
+    application.kubernetes.io/name: "user-service"
+    application.kubernetes.io/instance: "master"
+    application.kubernetes.io/version: "1.0.0"
+    application.kubernetes.io/component: "user-service"
+    application.kubernetes.io/part-of: "cvetrack"
+    application.kubernetes.io/managed-by: "flux"
+    application.kubernetes.io/created-by: "Cursor AI"
+spec:
+  chart:
+    spec:
+      chart: service-deployment
+      sourceRef:
+        kind: HelmRepository
+        name: nexus
+        namespace: flux-system
+      version: 1.2.0
+  interval: 24h
+  releaseName: user-service
+  targetNamespace: cve-track
+  suspend: false
+  timeout: 5m
+  values:
+    replicaCount: 1
+    image: docker.truebyteinnovation.com/cve-track/main/user-service:1 # {"$imagepolicy": "flux-system:user-service-policy"}
+    imagePullPolicy: Always
+    imagePullSecrets:
+      - name: docker-registry-secret
+    livenessProbe:
+      httpGet:
+        path: /health
+        port: 9090
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    readinessProbe:
+      httpGet:
+        path: /health
+        port: 9090
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    service:
+      type: ClusterIP
+      port: 9090
+    resources:
+      enable: true
+      limits:
+        cpu: 600m
+        memory: 1Gi
+      requests:
+        cpu: 100m
+        memory: 1Gi
+    autoscaling:
+      enabled: false
+      minReplicas: 1
+      maxReplicas: 1
+      targetCPUUtilizationPercentage: 70
+      targetMemoryUtilizationPercentage: 70
+    ingress:
+      enabled: true
+      annotations:
+        kubernetes.io/ingress.class: nginx
+        nginx.ingress.kubernetes.io/secure-backends: "false"
+        nginx.ingress.kubernetes.io/ssl-redirect: "false"
+        nginx.ingress.kubernetes.io/enable-access-log: "false"
+      hosts:
+        - host: api.cvetrack.ai
+          paths:
+            - path: /v1/users
+              pathType: ImplementationSpecific
+    externalConfigMaps:
+      - name: cvetrack-common-config
+    configMaps:
+      default:
+        SERVICE_NAME: "users"
+        REDIS_USERNAME: "cvetrack-user"
+        SMTP_SERVER: "smtp-relay.brevo.com"
+        SMTP_SENDER_EMAIL: "support@truebyteinnovation.com"
+    externalSecrets:
+      - name: cvetrack-db-secret
+      - name: cvetrack-app-secret
+      - name: cvetrack-jwt-secret
+      - name: cvetrack-redis-secret
+    # affinity:
+    #   nodeAffinity:
+    #     requiredDuringSchedulingIgnoredDuringExecution:
+    #       nodeSelectorTerms:
+    #         - matchExpressions:
+    #             - key: env
+    #               operator: In
+    #               values:
+    #                 - dev
+    #             - key: app
+    #               operator: In
+    #               values:
+    #                 - cvetrack
+    topologySpreadConstraints:
+      enabled: true
+      maxSkew: 1
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: ScheduleAnyway
